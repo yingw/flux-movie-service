@@ -13,9 +13,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.repository.ReactiveMongoRepository;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.server.*;
+import org.springframework.web.reactive.function.server.RouterFunction;
+import org.springframework.web.reactive.function.server.ServerRequest;
+import org.springframework.web.reactive.function.server.ServerResponse;
+import org.springframework.web.server.WebFilter;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.util.function.Tuple2;
@@ -26,7 +30,7 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.springframework.web.reactive.function.server.RequestPredicates.GET;
-import static org.springframework.web.reactive.function.server.RouterFunctions.*;
+import static org.springframework.web.reactive.function.server.RouterFunctions.route;
 
 @SpringBootApplication
 public class FluxMovieServiceApplication {
@@ -47,12 +51,21 @@ class SampleMoviesCLR implements CommandLineRunner {
     @Override
     public void run(String... strings) throws Exception {
         movieRepository.deleteAll().subscribe(null, null, () -> {
-            Stream.of("A", "B")
+            Stream.of("Movie A", "Movie B")
                     .forEach(title -> movieRepository.save(new Movie(UUID.randomUUID().toString(), title)).subscribe());
             movieRepository.findAll().subscribe(System.out::println);
         });
     }
 }
+
+//
+//@Configuration
+//class ReactiveSecurityConfigration {
+//    @Bean
+//    WebFilter security() {
+////        HttpSecurity
+//    }
+//}
 /*
 
 @Component
@@ -92,6 +105,7 @@ class FluxMovieService {
         return movieRepository.findAll();
     }
 
+    // use flatMap
     Flux<MovieEvent> getEvents(String id) {
         return findById(id).flatMapMany(movie -> {
             Flux<MovieEvent> eventFlux = Flux.fromStream(
@@ -129,7 +143,7 @@ class FunctionalReactiveRouterConfiguration {
         }
     }
 
-    /*    @Bean
+    /*    @Bean // 原写法
         RouterFunction<?> routes(FluxMovieService service) {
             return RouterFunctions.route(RequestPredicates.GET("/movies"), new HandlerFunction<ServerResponse>() {
                 @Override
